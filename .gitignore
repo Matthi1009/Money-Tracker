@@ -1,0 +1,5 @@
+node_modules/
+.DS_Store
+# Eigene Backups nicht versehentlich hochladen
+money-tracker-backup-*.json
+money-tracker-*.csv

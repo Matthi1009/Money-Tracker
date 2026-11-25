@@ -1,0 +1,15 @@
+{
+  "name": "money-tracker",
+  "version": "1.0.0",
+  "description": "Einnahmen, Ausgaben und Sparziele im Blick – läuft komplett im Browser.",
+  "private": true,
+  "license": "MIT",
+  "author": "Matthi1009",
+  "scripts": {
+    "test": "node --test tests/",
+    "start": "python3 -m http.server 8080"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

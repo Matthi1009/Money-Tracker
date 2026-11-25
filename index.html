@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Money Tracker</title>
+  <meta name="description" content="Einnahmen, Ausgaben und Sparziele im Blick. Alle Daten bleiben in deinem Browser.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231f6f4a'/%3E%3Ctext x='16' y='22' font-size='17' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='700'%3E€%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">€</span>
+        <h1>Money Tracker</h1>
+      </div>
+      <nav class="month-nav" aria-label="Monat wählen">
+        <button type="button" class="icon-btn" id="month-prev" aria-label="Vorheriger Monat">‹</button>
+        <button type="button" class="month-label" id="month-label" title="Zum aktuellen Monat">—</button>
+        <button type="button" class="icon-btn" id="month-next" aria-label="Nächster Monat">›</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="summary" aria-label="Monatsübersicht">
+      <div class="stat">
+        <p class="stat-label">Einnahmen</p>
+        <p class="stat-value income" id="sum-income">—</p>
+      </div>
+      <div class="stat">
+        <p class="stat-label">Ausgaben</p>
+        <p class="stat-value expense" id="sum-expense">—</p>
+      </div>
+      <div class="stat">
+        <p class="stat-label">Übrig</p>
+        <p class="stat-value" id="sum-balance">—</p>
+      </div>
+      <div class="stat">
+        <p class="stat-label">Sparquote</p>
+        <p class="stat-value" id="sum-rate">—</p>
+        <p class="stat-hint">Anteil der Einnahmen, der übrig bleibt</p>
+      </div>
+    </section>
+
+    <div class="layout">
+      <section class="panel" id="entry" aria-labelledby="entry-title">
+        <h2 id="entry-title">Neue Buchung</h2>
+        <form id="tx-form" novalidate>
+          <div class="segmented" role="radiogroup" aria-label="Art der Buchung">
+            <input type="radio" name="type" id="type-expense" value="expense" checked>
+            <label for="type-expense">Ausgabe</label>
+            <input type="radio" name="type" id="type-income" value="income">
+            <label for="type-income">Einnahme</label>
+          </div>
+          <div class="field">
+            <label for="tx-amount">Betrag in €</label>
+            <input id="tx-amount" name="amount" inputmode="decimal" autocomplete="off" placeholder="12,50" required>
+          </div>
+          <div class="field">
+            <label for="tx-category">Kategorie</label>
+            <input id="tx-category" name="category" list="category-list" autocomplete="off" placeholder="z. B. Essen" required maxlength="40">
+            <datalist id="category-list"></datalist>
+          </div>
+          <div class="field">
+            <label for="tx-date">Datum</label>
+            <input id="tx-date" name="date" type="date" required>
+          </div>
+          <div class="field">
+            <label for="tx-note">Notiz <span class="optional">optional</span></label>
+            <input id="tx-note" name="note" autocomplete="off" maxlength="200" placeholder="Wofür?">
+          </div>
+          <p class="form-error" id="tx-error" role="alert" hidden></p>
+          <button type="submit" class="btn btn-primary">Buchung speichern</button>
+        </form>
+      </section>
+
+      <section class="panel" id="trend" aria-labelledby="trend-title">
+        <div class="panel-head">
+          <h2 id="trend-title">Letzte 6 Monate</h2>
+          <div class="legend"><span class="dot income-bg"></span>Einnahmen <span class="dot expense-bg"></span>Ausgaben</div>
+        </div>
+        <div class="chart" id="trend-chart"></div>
+      </section>
+    </div>
+
+    <div class="layout">
+      <section class="panel" id="categories" aria-labelledby="cat-title">
+        <h2 id="cat-title">Ausgaben nach Kategorie</h2>
+        <ol class="cat-list" id="cat-list"></ol>
+        <p class="empty" id="cat-empty" hidden>Noch keine Ausgaben in diesem Monat.</p>
+      </section>
+
+      <section class="panel" id="goals" aria-labelledby="goals-title">
+        <h2 id="goals-title">Sparziele</h2>
+        <p class="hint" id="goal-pace"></p>
+        <ul class="goal-list" id="goal-list"></ul>
+        <form id="goal-form" class="goal-form" novalidate>
+          <div class="field">
+            <label for="goal-name">Ziel</label>
+            <input id="goal-name" maxlength="60" placeholder="z. B. Neue Grafikkarte" autocomplete="off">
+          </div>
+          <div class="field">
+            <label for="goal-target">Betrag in €</label>
+            <input id="goal-target" inputmode="decimal" placeholder="450" autocomplete="off">
+          </div>
+          <button type="submit" class="btn">Ziel anlegen</button>
+          <p class="form-error" id="goal-error" role="alert" hidden></p>
+        </form>
+      </section>
+    </div>
+
+    <section class="panel" id="transactions" aria-labelledby="tx-title">
+      <div class="panel-head">
+        <h2 id="tx-title">Buchungen im <span id="tx-month">—</span></h2>
+        <input type="search" id="tx-search" class="search" placeholder="Suchen …" aria-label="Buchungen durchsuchen">
+      </div>
+      <div class="table-wrap">
+        <table class="tx-table">
+          <thead>
+            <tr><th scope="col">Datum</th><th scope="col">Kategorie</th><th scope="col">Notiz</th><th scope="col" class="num">Betrag</th><th scope="col"><span class="sr-only">Aktionen</span></th></tr>
+          </thead>
+          <tbody id="tx-body"></tbody>
+        </table>
+      </div>
+      <p class="empty" id="tx-empty" hidden>Keine Buchungen in diesem Monat. Trag oben deine erste ein.</p>
+    </section>
+
+    <section class="panel data-panel" id="data" aria-labelledby="data-title">
+      <h2 id="data-title">Deine Daten</h2>
+      <p class="hint">Alles wird nur in diesem Browser gespeichert. Mach ab und zu ein Backup, damit nichts verloren geht.</p>
+      <div class="data-actions">
+        <button type="button" class="btn" id="export-json">Backup herunterladen (JSON)</button>
+        <button type="button" class="btn" id="export-csv">Als CSV exportieren</button>
+        <label class="btn" for="import-file">Backup einspielen</label>
+        <input type="file" id="import-file" accept="application/json,.json" class="sr-only">
+        <button type="button" class="btn btn-danger" id="reset-all">Alles löschen</button>
+      </div>
+      <p class="hint" id="data-status" role="status"></p>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" hidden>
+    <span id="toast-text"></span>
+    <button type="button" class="toast-btn" id="toast-undo">Rückgängig</button>
+  </div>
+
+  <footer class="wrap footer">
+    <p>Money Tracker · Open Source unter MIT-Lizenz · keine Cookies, kein Server, kein Tracking</p>
+  </footer>
+
+  <script src="js/logic.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
